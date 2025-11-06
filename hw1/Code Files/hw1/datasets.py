@@ -5,9 +5,7 @@ from contextlib import contextmanager
 from torch.utils.data import Dataset, IterableDataset
 
 
-def random_labelled_image(
-    shape: Tuple[int, ...], num_classes: int, low=0, high=255, dtype=torch.int,
-) -> Tuple[Tensor, int]:
+def random_labelled_image(shape: Tuple[int, ...], num_classes: int, low=0, high=255, dtype=torch.int) -> Tuple[Tensor, int]:
     """
     Generates a random image and a random class label for it.
     :param shape: The shape of the generated image e.g. (C, H, W).
@@ -20,7 +18,9 @@ def random_labelled_image(
     # TODO:
     #  Implement according to the docstring description.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    image = torch.randint(low, high, shape,dtype=dtype) 
+    label = torch.randint(0,num_classes-1, (1,)).item() #1x1 -> item() = single item
     # ========================
     return image, label
 
