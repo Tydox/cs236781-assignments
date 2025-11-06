@@ -3,7 +3,9 @@ from torch import Tensor
 from typing import Tuple, Iterator
 from contextlib import contextmanager
 from torch.utils.data import Dataset, IterableDataset
-
+#return → exits the function and forgets everything. Next time you call the function, it starts fresh.
+#yield → pauses the function, hands back a value, and remembers everything (local variables, loop counters, current position).
+#When you ask for the next value, it resumes right after the last yield, using the same state it had before.
 
 def random_labelled_image(shape: Tuple[int, ...], num_classes: int, low=0, high=255, dtype=torch.int) -> Tuple[Tensor, int]:
     """
@@ -19,8 +21,8 @@ def random_labelled_image(shape: Tuple[int, ...], num_classes: int, low=0, high=
     #  Implement according to the docstring description.
     # ====== YOUR CODE: ======
     #raise NotImplementedError()
-    image = torch.randint(low, high, shape,dtype=dtype) 
-    label = torch.randint(0,num_classes-1, (1,)).item() #1x1 -> item() = single item
+    image = torch.randint(low, high, shape,dtype=dtype) #<- might need high+1 as it goes up to 254
+    label = torch.randint(0,num_classes, (1,)).item() #1x1 -> item() = single item
     # ========================
     return image, label
 
@@ -43,9 +45,11 @@ def torch_temporary_seed(seed: int):
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
         torch.random.manual_seed(seed)
+        #torch.manual_seed(seed)
+        #torch.cuda.manual_seed(seed)
         # ========================
-        yield
-    finally: #always runs even with errors
+        yield #lets use use "with" code block
+    finally: #always runs even with errors - used for cleanup
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
         #return back to previous state
@@ -69,7 +73,7 @@ class RandomImageDataset(Dataset):
         super().__init__()
         self.num_classes = num_classes
         self.num_samples = num_samples
-        self.image_dim = (C, W, H)
+        self.image_dim = (C,H,W) #change from C,W,H
 
     def __getitem__(self, index: int) -> Tuple[Tensor, int]:
         """
@@ -86,7 +90,13 @@ class RandomImageDataset(Dataset):
         #  the random state outside this method.
         #  Raise a ValueError if the index is out of range.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        if not (0 <= index < self.num_samples):
+            raise ValueError(f"Index {index} is out of range of {self.num_samples}. get ")
+            
+        with torch_temporary_seed(index):
+            return random_labelled_image(shape=self.image_dim,num_classes=self.num_classes)
+        
         # ========================
 
     def __len__(self):
@@ -94,7 +104,8 @@ class RandomImageDataset(Dataset):
         :return: Number of samples in this dataset.
         """
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return self.num_samples
         # ========================
 
 
@@ -112,7 +123,7 @@ class ImageStreamDataset(IterableDataset):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.image_dim = (C, W, H)
+        self.image_dim = (C, H, W)#changed from c,w,h
 
     def __iter__(self) -> Iterator[Tuple[Tensor, int]]:
         """
@@ -123,7 +134,9 @@ class ImageStreamDataset(IterableDataset):
         #  Yield tuples to produce an iterator over random images and labels.
         #  The iterator should produce an infinite stream of data.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        while True:
+            yield random_labelled_image(self.image_dim, self.num_classes)
         # ========================
 
 
