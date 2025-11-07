@@ -21,8 +21,12 @@ def random_labelled_image(shape: Tuple[int, ...], num_classes: int, low=0, high=
     #  Implement according to the docstring description.
     # ====== YOUR CODE: ======
     #raise NotImplementedError()
-    image = torch.randint(low, high, shape,dtype=dtype) #<- might need high+1 as it goes up to 254
-    label = torch.randint(0,num_classes, (1,)).item() #1x1 -> item() = single item
+    #image = torch.randint(low, high, shape,dtype=dtype) #<- might need high+1 as it goes up to 254
+    #label = torch.randint(0,num_classes, (1,)).item() #1x1 -> item() = single item
+    
+    #NOT SURE IF THIS IS WHAT THEY WANT - OR MY ORIGINAL ABOVE IS FINE
+    image = (torch.rand(size=shape,dtype=torch.float32) * (high-low) + low).to(dtype) #[0,1]*(H-L)+L->[L,H]
+    label = int(torch.rand(1).item() * num_classes) #[0,1)*10 -> [0,9]
     # ========================
     return image, label
 
@@ -73,7 +77,7 @@ class RandomImageDataset(Dataset):
         super().__init__()
         self.num_classes = num_classes
         self.num_samples = num_samples
-        self.image_dim = (C,H,W) #change from C,W,H
+        self.image_dim = (C,W,H) #change from C,W,H
 
     def __getitem__(self, index: int) -> Tuple[Tensor, int]:
         """
@@ -123,7 +127,7 @@ class ImageStreamDataset(IterableDataset):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.image_dim = (C, H, W)#changed from c,w,h
+        self.image_dim = (C, W, H)#changed from c,w,h
 
     def __iter__(self) -> Iterator[Tuple[Tensor, int]]:
         """
@@ -145,7 +149,7 @@ class SubsetDataset(Dataset):
     A dataset that wraps another dataset, returning a subset from it.
     """
 
-    def __init__(self, source_dataset: Dataset, subset_len: int, offset=0):
+    def __init__(self, source_dataset: Dataset, subset_len: int, offset=0): #daata loading
         """
         Create a SubsetDataset from another dataset.
         :param source_dataset: The dataset to take samples from.
@@ -159,15 +163,20 @@ class SubsetDataset(Dataset):
         self.subset_len = subset_len
         self.offset = offset
 
-    def __getitem__(self, index):
+    def __getitem__(self, index): #allows for indexing later
         # TODO:
         #  Return the item at index + offset from the source dataset.
         #  Raise an IndexError if index is out of bounds.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        if not (0 <= index < self.subset_len):
+            raise IndexError(f"Error @SubsetDataset-> index out of bounds: {index}/{self.subset_len}")
+        
+        return self.source_dataset[index+self.offset] #returns -> dataset_x, dataset_y
         # ========================
 
-    def __len__(self):
+    def __len__(self): #len(dataset)
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        return self.subset_len
         # ========================
