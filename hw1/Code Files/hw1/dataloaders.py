@@ -3,8 +3,7 @@ import numpy as np
 import torch
 import torch.utils.data
 from typing import Sized, Iterator
-from torch.utils.data import Dataset, Sampler
-
+from torch.utils.data import Dataset, Sampler, SubsetRandomSampler
 
 class FirstLastSampler(Sampler):
     """
@@ -25,22 +24,28 @@ class FirstLastSampler(Sampler):
         # If the length of the data source is N, you should return indices in a
         # first-last ordering, i.e. [0, N-1, 1, N-2, ...].
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        N = len(self.data_source)
+        l = 0
+        r = N-1
+        while l <= r:
+            yield l
+            if l != r: #stop at middle number
+                yield r
+            l+=1
+            r-=1
+        
         # ========================
 
     def __len__(self):
         return len(self.data_source)
 
 
-def create_train_validation_loaders(
-    dataset: Dataset, validation_ratio, batch_size=100, num_workers=2
-):
+def create_train_validation_loaders(dataset: Dataset, validation_ratio, batch_size=100, num_workers=2):
     """
-    Splits a dataset into a train and validation set, returning a
-    DataLoader for each.
+    Splits a dataset into a train and validation set, returning a DataLoader for each.
     :param dataset: The dataset to split.
-    :param validation_ratio: Ratio (in range 0,1) of the validation set size to
-        total dataset size.
+    :param validation_ratio: Ratio (in range 0,1) of the validation set size to total dataset size.
     :param batch_size: Batch size the loaders will return from each set.
     :param num_workers: Number of workers to pass to dataloader init.
     :return: A tuple of train and validation DataLoader instances.
@@ -50,15 +55,29 @@ def create_train_validation_loaders(
 
     # TODO:
     #  Create two DataLoader instances, dl_train and dl_valid.
+    
     #  They should together represent a train/validation split of the given
     #  dataset. Make sure that:
     #  1. Validation set size is validation_ratio * total number of samples.
-    #  2. No sample is in both datasets. You can select samples at random
-    #     from the dataset.
-    #  Hint: you can specify a Sampler class for the `DataLoader` instance
-    #  you create.
+    #  2. No sample is in both datasets. You can select samples at random from the dataset. -> no permutations
+    #  Hint: you can specify a Sampler class for the `DataLoader` instance you create.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    if not (0.0 <= validation_ratio <= 1.0):
+        raise ValueError(f"Valication Ratio is bad {validation_ratio}, num is [0,1]")
+    
+    N = len(dataset)
+    validation_samples_size = int(validation_ratio * N)
+    idx = torch.randperm(N).tolist() #(Nx1) of shuffled index numbers
+    train_idx = idx[validation_samples_size:] #[--train-- : skipped]
+    valid_idx = idx[:validation_samples_size] #[ skipped  : --val--]
+    #ds_train = dataset[train_idx] #duplicate dataset for specific indices
+    #ds_valid = dataset[valid_idx]
+    #ds_train = Subset(dataset, train_idx)
+    #ds_valid = Subset(dataset, valid_idx)
+
+    dl_train = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=SubsetRandomSampler(train_idx),num_workers=num_workers)
+    dl_valid = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=SubsetRandomSampler(valid_idx),num_workers=num_workers)
     # ========================
 
     return dl_train, dl_valid

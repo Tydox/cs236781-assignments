@@ -26,7 +26,12 @@ class InvertColors(object):
         """
         # TODO: Invert the colors of the input image.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        
+        #apply a linear transformation
+        #max_val = 1.0 if torch.max(x) <=1 else 255.0
+        #return max_val-x #255-x=[255,0]
+        return 1.0 - x
         # ========================
 
 
@@ -38,7 +43,10 @@ class FlipUpDown(object):
         """
         # TODO: Flip the input image so that up is down.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        
+        #return x[:, ::-1, :] #a[start:stop:step] # start through not past stop, by step
+        return torch.flip(x,dims=[1]) #1=up\down,2=left/right
         # ========================
 
 
