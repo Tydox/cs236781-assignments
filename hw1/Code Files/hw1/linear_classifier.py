@@ -98,7 +98,7 @@ class LinearClassifier(object):
         for epoch_idx in range(max_epochs):
             total_correct = 0
             average_loss = 0
-
+            
             # TODO:
             #  Implement model training loop.
             #  1. At each epoch, evaluate the model on the entire training set
@@ -107,11 +107,52 @@ class LinearClassifier(object):
             #  3. Accumulate average loss and total accuracy for both sets.
             #     The train/valid_res variables should hold the average loss
             #     and accuracy per epoch.
-            #  4. Don't forget to add a regularization term to the loss,
-            #     using the weight_decay parameter.
+            #  4. Don't forget to add a regularization term to the loss, using the weight_decay parameter.
 
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            #raise NotImplementedError()
+            #TRAINING
+            total_samples = 0
+            for batch_idx, (X,y) in enumerate(dl_train):
+                y_pred, class_scores = self.predict(X) #forward propagation
+                loss = loss_fn(X, y, class_scores, y_pred) #compute loss
+                loss_grad = loss_fn.grad() #compute gradient with respect to W matrix
+                loss = loss + 0.5*weight_decay*torch.sum(self.weights ** 2) #add regulizer to loss lambda|w|^2
+                self.weights = self.weights - learn_rate*(loss_grad + weight_decay*self.weights) #SGD update weights
+                #print(epoch_idx)
+                #if epoch_idx == 0:
+                #    train_res.loss.append(loss/)
+                #train_res.loss.append(train_res.loss[epoch_idx]+loss)
+                #total_correct += self.evaluate_accuracy(y, y_pred)
+                total_correct += (y_pred == y).sum().item()
+                average_loss += loss.item()* X.shape[0]
+                total_samples += X.shape[0]
+                
+                
+            train_res.accuracy.append(total_correct / total_samples)
+            train_res.loss.append(average_loss / total_samples)
+            
+            
+            #VALIDATION
+            # valid_correct = 0
+            # valid_loss = 0.0
+            total_samples = 0
+            total_correct = 0
+            average_loss = 0
+            #with torch.no_grad():
+            for X_val,y_val in dl_valid:
+                y_pred_val, class_scores_val = self.predict(X_val)#forward propagation
+                loss_val = loss_fn(X_val, y_val, class_scores_val, y_pred_val) #compute loss
+                loss_val = loss_val + 0.5*weight_decay * torch.sum(self.weights ** 2)
+                total_correct += (y_pred_val == y_val).sum().item()
+                average_loss += loss_val.item()* X_val.shape[0]
+                total_samples += X_val.shape[0]
+                    
+            #print(total_samples)
+            valid_res.accuracy.append(total_correct /total_samples)
+            valid_res.loss.append(average_loss / total_samples)
+            #print(train_res)
+            print(f"epoch {epoch_idx}: train acc: {train_res.accuracy[epoch_idx]} eval acc: {valid_res.accuracy[epoch_idx]} | train loss: {train_res.loss[epoch_idx]:.2f} eval loss: {valid_res.loss[epoch_idx]:.2f}")
             # ========================
             print(".", end="")
 
@@ -132,7 +173,16 @@ class LinearClassifier(object):
         #  The output shape should be (n_classes, C, H, W).
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        #W=DxC
+        C,H,W = img_shape
+        #print(C,H,W)
+        w_images = self.weights
+        if has_bias:#skip w0=b
+            w_images=w_images[1:]
+        
+        #assert W.shape[0] == C*H*W, f"Weight features {W.shape[0]} do not match img_shape {C*H*W}"
+        w_images = torch.reshape(w_images.T,(self.n_classes,C,H,W))
         # ========================
 
         return w_images
@@ -145,7 +195,10 @@ def hyperparams():
     #  Manually tune the hyperparameters to get the training accuracy test
     #  to pass.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    hp['weight_std'] = 0.001
+    hp['learn_rate'] = 0.1
+    hp['weight_decay'] = 0.001
     # ========================
 
     return hp
