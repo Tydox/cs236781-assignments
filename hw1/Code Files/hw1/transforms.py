@@ -59,9 +59,8 @@ class BiasTrick(object):
     def __call__(self, x: torch.Tensor):
         """
         :param x: A pytorch tensor of shape (D,) or (N1,...Nk, D).
-        We assume D is the number of features and the N's are extra
-        dimensions. E.g. shape (N,D) for N samples of D features;
-        shape (D,) or (1, D) for one sample of D features.
+        We assume D is the number of features and the N's are extra dimensions. 
+        E.g. shape (N,D) for N samples of D features; shape (D,) or (1, D) for one sample of D features.
         :return: A tensor with D+1 features, where a '1' was prepended to
         each sample's feature dimension.
         """
@@ -71,5 +70,8 @@ class BiasTrick(object):
         #  Add a 1 at the beginning of the given tensor's feature dimension.
         #  Hint: See torch.cat().
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        #we need to find the size of X, and then create a ones vector
+        ones = torch.ones(*x.shape[:-1],1,dtype=x.dtype)#(N1,...Nk, D)->(N1,...Nk, _)x1 vector
+        return torch.cat([ones,x],dim=-1)#-1 last dim D
         # ========================

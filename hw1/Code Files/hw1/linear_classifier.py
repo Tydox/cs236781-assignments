@@ -23,7 +23,9 @@ class LinearClassifier(object):
 
         self.weights = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        #We need W=(D+1xC)
+        self.weights = torch.normal(mean=0,std=weight_std,size=(self.n_features,self.n_classes))
         # ========================
 
     def predict(self, x: Tensor):
@@ -31,13 +33,14 @@ class LinearClassifier(object):
         Predict the class of a batch of samples based on the current weights.
         :param x: A tensor of shape (N,n_features) where N is the batch size.
         :return:
-            y_pred: Tensor of shape (N,) where each entry is the predicted
-                class of the corresponding sample. Predictions are integers in
-                range [0, n_classes-1].
+            y_pred: Tensor of shape (N,) where each entry is the predicted class of the corresponding sample.
+                Predictions are integers in range [0, n_classes-1].
             class_scores: Tensor of shape (N,n_classes) with the class score
                 per sample.
         """
-
+        #X=NxD+1
+        #Y^=Nx1
+        #Score=NxC
         # TODO:
         #  Implement linear prediction.
         #  Calculate the score for each class using the weights and
@@ -45,7 +48,9 @@ class LinearClassifier(object):
 
         y_pred, class_scores = None, None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        class_scores = x @ self.weights #(NxD+1)(D+1xC)=NxC
+        _,y_pred = torch.max(class_scores,dim=1)#dim1=C dim
         # ========================
 
         return y_pred, class_scores
@@ -53,20 +58,24 @@ class LinearClassifier(object):
     @staticmethod
     def evaluate_accuracy(y: Tensor, y_pred: Tensor):
         """
-        Calculates the prediction accuracy based on predicted and ground-truth
-        labels.
+        Calculates the prediction accuracy based on predicted and ground-truth labels.
         :param y: A tensor of shape (N,) containing ground truth class labels.
         :param y_pred: A tensor of shape (N,) containing predicted labels.
         :return: The accuracy in percent.
         """
-
+        #y=Nx1
+        #y^=Nx1
         # TODO:
         #  calculate accuracy of prediction.
         #  Do not use an explicit loop.
 
         acc = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        acc = (y == y_pred).float().mean()
+        
+        #acc = (y==y_pred).float() #convert vector true\false to 1\0
+        #acc = acc.sum()/acc.numel() #correct predictions / total predictions
         # ========================
 
         return acc * 100

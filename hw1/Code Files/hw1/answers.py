@@ -63,7 +63,7 @@ part1_q2 = r"""
 
 **False** - we use cross-validation for hyper parameter tuning, lambda should be tuned before we do the final training and then the testing. 
 
-We do not use the test to choose the best lambda hyper parameter.
+We do not use the testset to choose the best lambda hyper parameter. because then we bias our model to the data.
 
 
 

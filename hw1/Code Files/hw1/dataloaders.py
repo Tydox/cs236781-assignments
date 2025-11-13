@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.utils.data
 from typing import Sized, Iterator
-from torch.utils.data import Dataset, Sampler, SubsetRandomSampler
+from torch.utils.data import Dataset, Sampler
 
 class FirstLastSampler(Sampler):
     """
@@ -76,8 +76,8 @@ def create_train_validation_loaders(dataset: Dataset, validation_ratio, batch_si
     #ds_train = Subset(dataset, train_idx)
     #ds_valid = Subset(dataset, valid_idx)
 
-    dl_train = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=SubsetRandomSampler(train_idx),num_workers=num_workers)
-    dl_valid = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=SubsetRandomSampler(valid_idx),num_workers=num_workers)
+    dl_train = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=torch.utils.data.SubsetRandomSampler(train_idx),num_workers=num_workers)
+    dl_valid = torch.utils.data.DataLoader(dataset,batch_size=batch_size,sampler=torch.utils.data.SubsetRandomSampler(valid_idx),num_workers=num_workers)
     # ========================
 
     return dl_train, dl_valid
