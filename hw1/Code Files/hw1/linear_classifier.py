@@ -196,9 +196,14 @@ def hyperparams():
     #  to pass.
     # ====== YOUR CODE: ======
     #raise NotImplementedError()
-    hp['weight_std'] = 0.001
-    hp['learn_rate'] = 0.1
+    hp['weight_std'] = 0.001 #noise
+    hp['learn_rate'] = 0.01
     hp['weight_decay'] = 0.001
+    
+    
+    # hp['weight_std'] = 0.01
+    # hp['learn_rate'] = 0.01
+    # hp['weight_decay'] = 0.001
     # ========================
 
     return hp

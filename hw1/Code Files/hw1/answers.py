@@ -75,26 +75,16 @@ We do not use the testset to choose the best lambda hyper parameter. because the
 part2_q1 = r"""
 **Your answer:**
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
 """
 
 part2_q2 = r"""
 **Your answer:**
 
+The interpretation of what the linear model is learning when we reshaped them into images, clearly looks like a correlation map\filter to each number, it's easy to see on 0,2,3. So we say the model is learning a kernel (filter map) that has the highest correlation with each class (numbers 0-9).
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+We think the classification error is based on the fact that some numbers can look the same or have high correlation because they overlap each other (מוכלים אחד בשני), for example if you look at 7 and 1, on the 1 filter you can see the shape of 7 (Z like shape) with highest activation in the middle as a line | . 
+the numbers 5 and 8 look similar, which can happen from the hand writing (italic, stroke thickness) when we look at the samples some of them are also not good data, we saw a 4 that does not look like a 4 because its missing the leg. so the data has outliers that can also skew the learning.
+
 
 """
 
@@ -102,12 +92,6 @@ part2_q3 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
 
 """
 

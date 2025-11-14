@@ -32,7 +32,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         y_pred = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        y_pred = X @ self.weights_ #(NxD)(Dx1)
         # ========================
 
         return y_pred
@@ -51,10 +52,13 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         w_opt = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        n_features = X.shape[1]
+        w_opt =np.linalg.inv(X.T @ X + self.reg_lambda*np.eye(n_features)) @ X.T @ y #the solution from manually doing derivation
+        #print(w_opt[..., np.newaxis].shape)
         # ========================
 
-        self.weights_ = w_opt
+        self.weights_ = w_opt#[..., np.newaxis]
         return self
 
     def fit_predict(self, X, y):
@@ -88,8 +92,7 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X: np.ndarray):
         """
-        :param X: A tensor of shape (N,D) where N is the batch size and D is
-        the number of features.
+        :param X: A tensor of shape (N,D) where N is the batch size and D is the number of features.
         :returns: A tensor xb of shape (N,D+1) where xb[:, 0] == 1
         """
         X = check_array(X, ensure_2d=True)
@@ -100,7 +103,14 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
         xb = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        #print(X.shape)
+        ones = np.ones((X.shape[0],1)).astype(X.dtype)#(Dx1) 2x1
+        #(X.dtype,ones.dtype)
+        print(ones.shape)
+        
+        xb = np.hstack((ones,X))
+        assert np.all(xb[:,0] == 1) #check that the first col is indeed 1 only values
         # ========================
 
         return xb
@@ -147,23 +157,29 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
 def top_correlated_features(df: DataFrame, target_feature, n=5):
     """
-    Returns the names of features most strongly correlated (correlation is
-    close to 1 or -1) with a target feature. Correlation is Pearson's-r sense.
+    Returns the names of features most strongly correlated (correlation is close to 1 or -1) with a target feature. Correlation is Pearson's-r sense.
 
     :param df: A pandas dataframe.
     :param target_feature: The name of the target feature.
     :param n: Number of top features to return.
     :return: A tuple of
         - top_n_features: Sequence of the top feature names
-        - top_n_corr: Sequence of correlation coefficients of above features
-        Both the returned sequences should be sorted so that the best (most
-        correlated) feature is first.
+        - top_n_corr: Sequence of correlation coefficients of above features Both the returned sequences should be sorted so that the best (most correlated) feature is first.
     """
 
     # TODO: Calculate correlations with target and sort features by it
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    
+    correlation_series = df.corr()[target_feature].drop(target_feature) #calc correlation for all features with target_feature and remove self-correlation because its not needed
+    #print(correlation_series)
+    top_correlation = correlation_series.abs().sort_values(ascending=False).head(n) #we want to sort but correlation is +-1 so we sort with abs and select the best N correlation, acending=false = Max-> min val sort
+    #print(type(top_correlation))
+    top_n_features = top_correlation.index.tolist() #convert df to list of names
+    top_n_corr = correlation_series[top_n_features].tolist()  # save the top cor with their values +- and not just abs
+
+
     # ========================
 
     return top_n_features, top_n_corr
@@ -179,7 +195,8 @@ def mse_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement MSE using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    mse = (np.square(y-y_pred)).mean()
     # ========================
     return mse
 
@@ -194,7 +211,11 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement R^2 using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    y_bar = y.mean()
+    #N = y.shape[0]
+    #print(N)
+    r2 = 1 - np.divide(mse_score(y,y_pred),mse_score(y, y_bar)) #no need to multiply by N, because we get N\N=1
     # ========================
     return r2
 
