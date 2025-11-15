@@ -29,7 +29,7 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         check_is_fitted(self, "weights_")
 
         # TODO: Calculate the model prediction, y_pred
-
+        
         y_pred = None
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
@@ -49,15 +49,21 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         # TODO:
         #  Calculate the optimal weights using the closed-form solution you derived.
         #  Use only numpy functions. Don't forget regularization!
-
+        
         w_opt = None
         # ====== YOUR CODE: ======
         #raise NotImplementedError()
+        N = X.shape[0]
         n_features = X.shape[1]
-        w_opt =np.linalg.inv(X.T @ X + self.reg_lambda*np.eye(n_features)) @ X.T @ y #the solution from manually doing derivation
+        I = np.eye(n_features)
+        I[0,0] = 0 #remove bias from being optimized
+        
+        w_opt =np.linalg.inv(X.T @ X + N*self.reg_lambda*I) @ X.T @ y #the solution from manually doing derivation
+        
+        #w_opt = np.linalg.solve(X.T @ X + self.reg_lambda*np.eye(n_features),  X.T @ y)
         #print(w_opt[..., np.newaxis].shape)
         # ========================
-
+        #print(self.weights_)
         self.weights_ = w_opt#[..., np.newaxis]
         return self
 
@@ -65,23 +71,27 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         return self.fit(X, y).predict(X)
 
 
-def fit_predict_dataframe(
-    model, df: DataFrame, target_name: str, feature_names: List[str] = None,
-):
+def fit_predict_dataframe(model, df: DataFrame, target_name: str, feature_names: List[str] = None,):
     """
-    Calculates model predictions on a dataframe, optionally with only a subset of
-    the features (columns).
+    Calculates model predictions on a dataframe, optionally with only a subset of the features (columns).
     :param model: An sklearn model. Must implement fit_predict().
-    :param df: A dataframe. Columns are assumed to be features. One of the columns
-        should be the target variable.
+    :param df: A dataframe. Columns are assumed to be features. One of the columns should be the target variable.
     :param target_name: Name of target variable.
-    :param feature_names: Names of features to use. Can be None, in which case all
-        features are used.
+    :param feature_names: Names of features to use. Can be None, in which case all features are used.
     :return: A vector of predictions, y_pred.
     """
     # TODO: Implement according to the docstring description.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    #raise NotImplementedError()
+    if feature_names is None: #if none we use alll cols - only remove the Y col
+        feature_names = df.drop(columns=[target_name]).columns
+    X = df[feature_names].to_numpy()
+    y = df[target_name].to_numpy()
+    #print(X.shape)
+    # if not np.allclose(X[:,0], 1.0): #do bias trick - not sure how to use the BiasTrickTransfomer - if you even can
+        # X = np.hstack([np.ones((X.shape[0],1)),X])
+    #print(X.shape)
+    y_pred = model.fit_predict(X,y)
     # ========================
     return y_pred
 
@@ -107,7 +117,7 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
         #print(X.shape)
         ones = np.ones((X.shape[0],1)).astype(X.dtype)#(Dx1) 2x1
         #(X.dtype,ones.dtype)
-        print(ones.shape)
+        #print(ones.shape)
         
         xb = np.hstack((ones,X))
         assert np.all(xb[:,0] == 1) #check that the first col is indeed 1 only values
@@ -127,10 +137,13 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         # TODO: Your custom initialization, if needed
         # Add any hyperparameters you need and save them as above
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        
+        self.polynom = PolynomialFeatures(degree=self.degree,include_bias=True) #create a polynom fit function
+        
         # ========================
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None):  #no neeed to touch      
         return self
 
     def transform(self, X):
@@ -149,9 +162,16 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        #X-> 0=CRIM, 1=ZN, 2=INDUS, 3=CHAS, 4=NOX, 5=RM, 6=AGE, 7=DIS, 8=RAD, 9=TAX, 10=PTRATIO, 11=B, 12=LSTAT
+        X_transformed = np.delete(X,3,axis=1) #remove chas
+        #Xt-> 0=CRIM, 1=ZN, 2=INDUS, 3=NOX, 4=RM, 5=AGE, 6=DIS, 7=RAD, 8=TAX, 9=PTRATIO, 10=B, 11=LSTAT
+        X_transformed[:,0] = np.log1p(X_transformed[:,0]) #log(1+X) CRIM
+        X_transformed[:,11] = np.log1p(X_transformed[:,11])#log(1+X) LSTAT
         # ========================
-
+        #print(X.shape,X_transformed.shape)
+        #X_trans = self.transform(X)
+        X_transformed = self.polynom.fit_transform(X_transformed) #calculate what polymon fits the data after phi(x)=log(1+x)
         return X_transformed
 
 
@@ -188,8 +208,8 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
 def mse_score(y: np.ndarray, y_pred: np.ndarray):
     """
     Computes Mean Squared Error.
-    :param y: Predictions, shape (N,)
-    :param y_pred: Ground truth labels, shape (N,)
+    :param y: Ground truth labels, shape (N,)
+    :param y_pred: Predictions, shape (N,)
     :return: MSE score.
     """
 
@@ -197,6 +217,7 @@ def mse_score(y: np.ndarray, y_pred: np.ndarray):
     # ====== YOUR CODE: ======
     #raise NotImplementedError()
     mse = (np.square(y-y_pred)).mean()
+    #print(mse)
     # ========================
     return mse
 
@@ -220,9 +241,7 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
     return r2
 
 
-def cv_best_hyperparams(
-    model: BaseEstimator, X, y, k_folds, degree_range, lambda_range
-):
+def cv_best_hyperparams(model: BaseEstimator, X, y, k_folds, degree_range, lambda_range):
     """
     Cross-validate to find best hyperparameters with k-fold CV.
     :param X: Training data.
@@ -237,18 +256,120 @@ def cv_best_hyperparams(
 
     # TODO: Do K-fold cross validation to find the best hyperparameters
     #  Notes:
-    #  - You can implement it yourself or use the built in sklearn utilities
-    #    (recommended). See the docs for the sklearn.model_selection package
-    #    http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
-    #  - If your model has more hyperparameters (not just lambda and degree)
-    #    you should add them to the search.
-    #  - Use get_params() on your model to see what hyperparameters is has
-    #    and their names. The parameters dict you return should use the same
-    #    names as keys.
+    #  - You can implement it yourself or use the built in sklearn utilities (recommended). See the docs for the sklearn.model_selection package http://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection
+    #  - If your model has more hyperparameters (not just lambda and degree) you should add them to the search.
+    #  - Use get_params() on your model to see what hyperparameters is has and their names. The parameters dict you return should use the same names as keys.
     #  - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
-    # ========================
+    #raise NotImplementedError()
+    # def linreg_boston_kfold(model, x, y, fit=True):
+    #     if fit:
+    #         model.fit(x, y)
+    #     y_pred = model.predict(x)
+    #     mse = mse_score(y, y_pred)
+    #     rsq = r2_score(y, y_pred)
+    #     return y_pred, mse, rsq
+    
+    # kfold = sklearn.model_selection.KFold(n_splits=k_folds,shuffle=False)#,random_state=47) #create a splitter
+    # print(f"K-Folders Splits: {kfold.get_n_splits(X)}")
+    # best_mse, best_rsq = np.inf,-np.inf #init values
+    
+    # # og_model = copy.deepcopy(model)
+    # #og_model = sklearn.base.clone(model)
+    # #best_model = sklearn.base.clone(model)
+    # for degree in degree_range:
+    #     for _,reg_lambda in enumerate(lambda_range):
+    #         #set the hyper paramters for this iteration
+    #         # model.reg_lambda = reg_lambda
+    #         # model.degree = degree
+    #         #print(model.get_params())
+    #         #model = sklearn.base.clone(og_model)
+    #        # model.set_params()
+    #         # Read current values
+    #         #print(model.get_params()['bostonfeaturestransformer__degree'])
+    #         #print(model.get_params()['linearregressor__reg_lambda'])
+    #         #model = sklearn.base.clone(og_model)
 
-    return best_params
+    #         # Update hyperparameters
+    #         model.set_params(bostonfeaturestransformer__degree=degree,linearregressor__reg_lambda=reg_lambda)
+            
+            
+    #         mse_list = []
+    #         rsq_list = []
+            
+    #         for i, (train_index, eval_index) in enumerate(kfold.split(X)):
+                
+    #             # print(f"Fold {i}:")
+    #             # print(f"  Train: index={train_index}")
+    #             # print(f"  Test:  index={test_index}")
+    #             #First traim
+    #             X_train = X[train_index,:]
+    #             y_train = y[train_index]
+                
+                
+                
+    #             y_pred, mse_train, rsq_train = linreg_boston_kfold(model, X_train, y_train)
+                
+    #             #Then Check performance
+    #             X_eval = X[eval_index,:]
+    #             y_eval = y[eval_index]
+    #             y_pred_eval, mse_eval, rsq_eval = linreg_boston_kfold(model, X_eval, y_eval,fit=False)
+                
+    #             #list so we can avg the kfolds
+    #             mse_list.append(mse_eval)
+    #             rsq_list.append(rsq_eval)
+                
+    #             #print data for debug
+    #             # print(f"HyperP: lambda = {reg_lambda:.2f}, polydeg = {degree}\t| TestMSE [{mse_train:.2f}], EvalMSE [{mse_eval:.2f}]\t| TestR2 [{rsq_train:.2f}], EvalR2 [{rsq_eval:.2f}]")
+    #             #Sava the best parameters if they are better mse\R2 than preious fold
+    #         avg_mse = np.mean(mse_list)
+    #         avg_rsq = np.mean(rsq_list)
+            
+    #         if avg_mse < best_mse or (avg_mse <= best_mse and avg_rsq > best_rsq):
+    #             best_mse = avg_mse
+    #             best_rsq = avg_rsq
+    #             best_params = model.get_params()
+    #             # best_model = sklearn.base.clone(model)
+
+    #             #print("------")
+    #             # print(f"Best Model: lambda = {reg_lambda:.2f}, polydeg = {degree}")
+    #             # print(f"HyperP: lambda = {reg_lambda:.2f}, polydeg = {degree}\t| TrainMSE [{mse_train:.2f}], EvalMSE [{mse_eval:.2f}]\t| TrainR2 [{rsq_train:.2f}], EvalR2 [{rsq_eval:.2f}]")
+                
+    #             # print(model.named_steps['bostonfeaturestransformer'].degree)  
+    #             # print(model.named_steps['linearregressor'].reg_lambda)        
+    #             # print(best_params)
+    #             # print("------")
+
+                
+            
+    #         # print(X_train)
+    #         # print(y_train)
+            
+    # # ========================
+
+    # return best_params
+    # Define the hyperparameter grid with the correct double-underscore syntax
+    param_grid = {
+        'bostonfeaturestransformer__degree': degree_range,
+        'linearregressor__reg_lambda': lambda_range
+    }
+
+    # Create the GridSearchCV object
+    grid_search = sklearn.model_selection.GridSearchCV(
+        estimator=model,
+        param_grid=param_grid,
+        scoring='r2',           # Use R^2 to select the best hyperparameters
+        cv=k_folds,
+        n_jobs=-1               # Use all cores for speed
+    )
+
+    # Fit the grid search
+    grid_search.fit(X, y)
+
+    # Return the best hyperparameters as a dict
+    return grid_search.best_params_
+
+
+
+
