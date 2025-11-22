@@ -8,6 +8,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.utils.validation import check_X_y, check_is_fitted
 
+# from matrepr import mdisplay
+
 
 class LinearRegressor(BaseEstimator, RegressorMixin):
     """
@@ -162,16 +164,20 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
+        # mdisplay(X, floatfmt=".2f")
         #raise NotImplementedError()
         #X-> 0=CRIM, 1=ZN, 2=INDUS, 3=CHAS, 4=NOX, 5=RM, 6=AGE, 7=DIS, 8=RAD, 9=TAX, 10=PTRATIO, 11=B, 12=LSTAT
-        X_transformed = np.delete(X,3,axis=1) #remove chas
+        X_transformed = np.delete(X,4,axis=1) #remove chas
+        # mdisplay(X_transformed, floatfmt=".2f")
         #Xt-> 0=CRIM, 1=ZN, 2=INDUS, 3=NOX, 4=RM, 5=AGE, 6=DIS, 7=RAD, 8=TAX, 9=PTRATIO, 10=B, 11=LSTAT
-        X_transformed[:,0] = np.log1p(X_transformed[:,0]) #log(1+X) CRIM
-        X_transformed[:,11] = np.log1p(X_transformed[:,11])#log(1+X) LSTAT
+        X_transformed[:,1] = np.log1p(X_transformed[:,1]) #log(1+X) CRIM
+        X_transformed[:,12] = np.log1p(X_transformed[:,12])#log(1+X) LSTAT
         # ========================
         #print(X.shape,X_transformed.shape)
         #X_trans = self.transform(X)
         X_transformed = self.polynom.fit_transform(X_transformed) #calculate what polymon fits the data after phi(x)=log(1+x)
+        # mdisplay(X_transformed, floatfmt=".2f")
+        # print("---")
         return X_transformed
 
 
@@ -349,26 +355,22 @@ def cv_best_hyperparams(model: BaseEstimator, X, y, k_folds, degree_range, lambd
     # # ========================
 
     # return best_params
-    # Define the hyperparameter grid with the correct double-underscore syntax
     param_grid = {
         'bostonfeaturestransformer__degree': degree_range,
         'linearregressor__reg_lambda': lambda_range
     }
 
-    # Create the GridSearchCV object
     grid_search = sklearn.model_selection.GridSearchCV(
         estimator=model,
         param_grid=param_grid,
-        scoring='r2',           # Use R^2 to select the best hyperparameters
+        scoring='r2',   # Use R^2 to select the best hyperparameters
         cv=k_folds,
-        n_jobs=-1               # Use all cores for speed
+        n_jobs=-1   # Use all cpu cores
     )
 
-    # Fit the grid search
     grid_search.fit(X, y)
 
-    # Return the best hyperparameters as a dict
-    return grid_search.best_params_
+    return grid_search.best_params_ #returns dict
 
 
 

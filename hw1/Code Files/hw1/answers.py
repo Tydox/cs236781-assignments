@@ -199,7 +199,7 @@ $E_{x,y}[f(x,y)]=E_x[g(x)]=E_x[E_{y|x}[f(x,y)]]=\overbrace{E_x[\underbrace{E_{y|
 We will do the expectation by parts, first the inner and then the outer part.
 
 $E_{y|x}[y|x]=\int^{1}_{0}|y-x|dy\overset{seperate \space 2 \space cases}{=}\underbrace{-\int^{x}_{0}(y-x)dy}_{\text{Y<X so |y-x|=-(y-x)}}+\int^{1}_{x}(y-x)dy=(xy-\frac{y^2}{2})\bigg\rvert_{0}^{x}+(\frac{y^2}{2}-xy)\bigg\rvert_{x}^{1}=x^{2}-x+\frac{1}{2}$
-$E_x[g(x)]=\int^{1}_{0}(x^{2-x+0.5)dx}= (\frac{x^3}{3} -x+\frac{1}{2}  )\bigg\rvert_{0}^{1}=\frac{1}{3}-0.5+0.5=\boxed{\frac{1}{3}=E_{x,y}[f(x,y)]}$
+$E_x[g(x)]=\int^{1}_{0}(x^{2}-x+0.5)dx= (\frac{x^3}{3} -\frac{x^2}{2}+\frac{x}{2} )\bigg\rvert_{0}^{1}=\frac{1}{3}-0.5+0.5=\boxed{\frac{1}{3}=E_{x,y}[f(x,y)]}$
 
 For $E_x[|\hat{x}-x|]$ we will do the same as above, but we must remember that $\hat{x}$ is actually a generated number (const).
 $E_{x|\hat{x}}[x|\hat{x}]=\int^{1}_{0}|\hat{x}-x|dx\overset{seperate \space 2 \space cases}{=}\int^{\hat{x}}_{0}(\hat{x}-x)dx-\int^{1}_{\hat{x}}(\hat{x}-x)dx=(x\hat{x}-\frac{x^2}{2})\bigg\rvert_{0}^{\hat{x}}-(\frac{x^2}{2}-x\hat{x})\bigg\rvert_{\hat{x}}^{1}=\boxed{x^{2}-x+\frac{1}{2}=E_x[|\hat{x}-x|]}$
