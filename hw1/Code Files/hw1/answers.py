@@ -27,7 +27,7 @@ Q1.1 **False** - "equally useful train-test split" constraint,
 
 * additionally depending on the complexity of the classes, the more complex a class is - the more samples we will probably want to give it,
 
-* also we usually use 70\30 test\train split, if we do for example 99\1 split or 1\99 split - we will get bad results and they wont be good splits. 
+* also we usually use 70\30 test\train split, if we do for example 99\1 split or 1\99 split - we may\probably get bad results and they wont be good splits. 
 
 We need to ensure the ratio is good, we need to have enough data for training and learning the fine details but also enough "unseen" data so we can test and evaluate the model.
 
@@ -55,6 +55,8 @@ We can add noise the x (features) to improve robustness.
 
 If this means after Training then its **True**, if we have photos of dogs and cats, and we label some dogs as cats and our model still predicts dogs, we know the model is robust, the accuracy will go down - but there are other metrics (i dont know of) that will be better for this task of evaluation.
 
+We expect the model to be able to overcome noise, if we add noise we can see how the model is robus to noise.
+
 ------------------------------------------------
 """
 
@@ -75,12 +77,17 @@ We do not use the testset to choose the best lambda hyper parameter. because the
 part2_q1 = r"""
 **Your answer:**
 Soft Margin SVM Loss Function:
+    
 $L(w)=\frac{1}{n}\sum^{i=1}_{N} L_{i}(w) + \frac{\lambda}{2}||w||^{2}$
+
 And using the hinge loss that sums how many incorrect classes were for each class:
+    
 $L_{i}({W}) =  \sum_{j \neq y_i} \max\left(0, \Delta+ \vec{w_j} \vec{x_i} - \vec{w_{y_i}} \vec{x_i}\right),$
 $\hat{y_{i}}=score\space of\space correct\space class$
 $\hat{y_{j}}=score\space of\space INCORRECT \space class$
+
 we want to get as small of an error as possible for $L(w)$ meaning we want the sum to also be small.
+
 In order to do that we need to get negative number in the max function, i.e. $0=max(0,(\color{red}-\color{black}))$ , this gives us the condition of: $\hat{y_{j}}-\hat{y_{i}}+\Updelta<0$
 then we get that: $\Updelta \geq \hat{y_{i}} - \hat{y_{j}}$ , we interoperate that as $\Updelta$ defining the minimum difference between right and wrong scores of prediction. If the difference is not bigger than $\Updelta$ then we have a penalty that we add to the loss, in return this forces the model to have bigger differences between right and wrong scores predictions which gives the model a higher confidence, it is like a margin that controls how far the correct class scores must be above incorrect class scores.
 
@@ -154,10 +161,15 @@ Judging our residual plot, we can see that:
 Overall we got $R^{2} >0.85$ which is high, the model fits well but not perfectly.
 
 LSTAT - $R^{2}=0.54$ okish linear relationship
+
 RM - $R^{2}=0.48$ okish linear relationship
+
 PTRATIO - $R^{2}=0.26$ bad linear relationship, has clustering $\times$
+
 INDUS - $R^{2}=0.23$ bad linear relationship
+
 TAX - $R^{2}=0.22$ bad linear relationship, has clustering $\times$
+
 All 5 of these are noisy and show a curvature (heteroscedacity) clearly visible in LSTAT and INDUS.
 Non of these features can alone capture and describe the MEDV well,
 """
